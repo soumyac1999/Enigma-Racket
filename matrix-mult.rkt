@@ -76,7 +76,7 @@
             (set! right-rotor r)
             (list l m r)))))
 
-(define (convert-char! ch)
+(define (convert-char! ch) ; return list of new char and l,m,r
   (let* ([E (matrix* R M L U Li Mi Ri)]
          [new-char (mult-matrix-to-char E ch)])
     (begin
@@ -90,4 +90,4 @@
       (cond [(zero? left-rotor) (begin
                                   (set! middle-rotor (modulo (+ 1 middle-rotor) NUMCHAR))
                                   (cond [(zero? middle-rotor) (set! right-rotor (modulo (+ 1 right-rotor) NUMCHAR))]))])
-      new-char)))
+      (list new-char left-rotor middle-rotor right-rotor))))
