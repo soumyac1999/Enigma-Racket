@@ -51,25 +51,25 @@
     (define/override (on-paint)
       (define dc (get-dc))
       (define w (get-width))
-      (define h (get-width))
+      (define h (get-height))
 
       (for ([i (in-range 10)])
         (send dc draw-bitmap
               (vector-ref r1 i)
-              (* i (/ h 10)) 0))
+              (* i (/ w 10)) 0))
       (for ([i (in-range 9)])
         (send dc draw-bitmap
               (vector-ref r2 i)
-              (+ 30 (* i (/ h 10))) 75))
+              (+ 30 (* i (/ w 10))) 75))
       (for ([i (in-range 7)])
         (send dc draw-bitmap
               (vector-ref r3 i)
-              (+ 75 (* i (/ h 10))) 150)))
+              (+ 75 (* i (/ w 10))) 150)))
 
     (define/override (on-char key-event)
       (define dc (get-dc))
       (define w (get-width))
-      (define h (get-width))
+      (define h (get-height))
       (define key-value (send key-event get-key-code))
       (define listed (string->list (~a key-value)))
       (cond
@@ -86,15 +86,15 @@
            (for ([i (in-range 10)])
              (send dc draw-bitmap
                    (vector-ref r1 i)
-                   (* i (/ h 10)) 0))
+                   (* i (/ w 10)) 0))
            (for ([i (in-range 9)])
              (send dc draw-bitmap
                    (vector-ref r2 i)
-                   (+ 30 (* i (/ h 10))) 75))
+                   (+ 30 (* i (/ w 10))) 75))
            (for ([i (in-range 7)])
              (send dc draw-bitmap
                    (vector-ref r3 i)
-                   (+ 75 (* i (/ h 10))) 150))
+                   (+ 75 (* i (/ w 10))) 150))
            (send (2d-vec-ref imgs (car pos) (cdr pos))
                  load-file
                  "white.jpeg"))]))))
