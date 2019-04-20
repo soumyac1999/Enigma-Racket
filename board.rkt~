@@ -20,31 +20,31 @@
                      [font (make-object font% 20 'script)]))
     (define letters (list #\Q #\W #\E #\R #\T #\Y #\U #\I #\O #\P #\A #\S #\D #\F #\G #\H #\J #\K #\L #\Z #\X #\C #\V #\B #\N #\M))
     (define img-map (make-hash (list (cons #\Q "letters/Q.jpg")
-                                     (cons #\W "letters/W.jpg")
-                                     (cons #\E "letters/E.jpg")
-                                     (cons #\R "letters/R.jpg")
-                                     (cons #\T "letters/T.jpg")
-                                     (cons #\Y "letters/Y.jpg")
-                                     (cons #\U "letters/U.jpg")
-                                     (cons #\I "letters/I.jpg")
-                                     (cons #\O "letters/O.jpg")
-                                     (cons #\P "letters/P.jpg")
-                                     (cons #\A "letters/A.jpg")
-                                     (cons #\S "letters/S.jpg")
-                                     (cons #\D "letters/D.jpg")
-                                     (cons #\F "letters/F.jpg")
-                                     (cons #\G "letters/G.jpg")
-                                     (cons #\H "letters/H.jpg")
-                                     (cons #\J "letters/J.jpg")
-                                     (cons #\K "letters/K.jpg")
-                                     (cons #\L "letters/L.jpg")
-                                     (cons #\Z "letters/Z.jpg")
-                                     (cons #\X "letters/X.jpg")
-                                     (cons #\C "letters/C.jpg")
-                                     (cons #\V "letters/V.jpg")
-                                     (cons #\B "letters/B.jpg")
-                                     (cons #\N "letters/N.jpg")
-                                     (cons #\M "letters/M.jpg"))))
+                                    (cons #\W "letters/W.jpg")
+                                    (cons #\E "letters/E.jpg")
+                                    (cons #\R "letters/R.jpg")
+                                    (cons #\T "letters/T.jpg")
+                                    (cons #\Y "letters/Y.jpg")
+                                    (cons #\U "letters/U.jpg")
+                                    (cons #\I "letters/I.jpg")
+                                    (cons #\O "letters/O.jpg")
+                                    (cons #\P "letters/P.jpg")
+                                    (cons #\A "letters/A.jpg")
+                                    (cons #\S "letters/S.jpg")
+                                    (cons #\D "letters/D.jpg")
+                                    (cons #\F "letters/F.jpg")
+                                    (cons #\G "letters/G.jpg")
+                                    (cons #\H "letters/H.jpg")
+                                    (cons #\J "letters/J.jpg")
+                                    (cons #\K "letters/K.jpg")
+                                    (cons #\L "letters/L.jpg")
+                                    (cons #\Z "letters/Z.jpg")
+                                    (cons #\X "letters/X.jpg")
+                                    (cons #\C "letters/C.jpg")
+                                    (cons #\V "letters/V.jpg")
+                                    (cons #\B "letters/B.jpg")
+                                    (cons #\N "letters/N.jpg")
+                                    (cons #\M "letters/M.jpg"))))
     (define r1 (build-vector
                 10
                 (λ (x) (make-object bitmap% (hash-ref img-map (list-ref letters x))))))
@@ -83,23 +83,14 @@
                                     (cons #\V (cons 2 3))
                                     (cons #\B (cons 2 4))
                                     (cons #\N (cons 2 5))
-                                    (cons #\M (cons 2 6)))))
-
-    (define/public (get-mesg)
-      (displayln mesg))
-    (define/public (clear-mesg)
-      (set! mesg "")
-      (on-paint)
-      (send msg set-label ""))
+                                    (cons #\M (cons 2 6)))))                   
 
     (define/override (on-paint)
       (define dc (get-dc))
       (define w (get-width))
       (define h (get-height))
       (match rotors
-        [(list i j k) (update-circles i j k knob0 knob1 knob2)])
-      (send dc set-brush (new brush% [color "black"]))
-      (send dc draw-rectangle 0 0 w h)
+             [(list i j k) (update-circles i j k knob0 knob1 knob2)])
       (for ([i (in-range 10)])
         (send dc draw-bitmap
               (vector-ref r1 i)
@@ -139,7 +130,7 @@
              [(list i j k) (update-circles i j k knob0 knob1 knob2)])
            (send (2d-vec-ref imgs (car pos) (cdr pos))
                  load-file
-                 "letters/act.jpeg")
+                 "black.jpeg")
            (for ([i (in-range 10)])
              (send dc draw-bitmap
                    (vector-ref r1 i)
@@ -159,7 +150,7 @@
 (define frame (new frame%
                    [label "Enigma"]
                    [width 750]
-                   [height 490]
+                   [height 500]
                    [x 0]
                    [y 0]
                    ;[style (list 'no-caption 'no-resize-border)]
@@ -176,50 +167,14 @@
                    [i 1]
                    [style (list 'border)]
                    ))
+
 (define knob2 (new knob%
                    [parent panel]
                    [i 2]
                    [style (list 'border)]
                    ))
-
-(define board (new enigma-canvas%
-                   [parent frame]))
-
+(new enigma-canvas%
+     [parent frame])
+(set! rotors ((set-enigma-mode! 'encrypt)))
 (send frame show #t)
-(send frame enable #f)
 
-(define (encrypt)
-  (send frame enable #t)
-  (set! rotors ((set-enigma-mode! 'encrypt)))
-  ; Diable the rotor set inputs
-  (match rotors
-    [(list i j k) (update-circles i j k knob0 knob1 knob2)]))
-; Once complete (send board get-mesg) (send board clear-mesg)
-
-(define (decrypt)
-;Get values for rotors
-;Disable inputs
-  (send frame enable #t)
-  (set! rotors ((set-enigma-mode! 'decrypt) 14 2 0))
-  (match rotors
-    [(list i j k) (update-circles i j k knob0 knob1 knob2)]))
-
-(define (done)
-  (send board get-mesg)
-  (send board clear-mesg)
-  (set! rotors '(0 0 0))
-  (update-circles 0 0 0 knob0 knob1 knob2)
-  (send frame enable #f))
-  
-;(define ls (new slider% [label "left"]
-;                [min-value 0]
-;                [max-value 25]
-;                [parent panel]))
-;(define cs (new slider% [label "center"]
-;                [min-value 0]
-;                [max-value 25]
-;                [parent panel]))
-;(define rs (new slider% [label "right"]
-;                [min-value 0]
-;                [max-value 25]
-;                [parent panel]))
