@@ -1,9 +1,26 @@
 #lang racket/gui
 (require 2htdp/image)
+(provide (all-defined-out))
 (define i 10)
 (define j 12)
 (define k 1)
-
+(define (paint-proc-form i w h)
+  (lambda (dc)
+  (define knob (make-object bitmap% (string-append
+                                       "circles/circle-"
+                                       (~a (get-value i)) ".png")))
+      (define knob-w (image-width knob))
+      (define knob-h (image-height knob))
+        (send dc draw-bitmap
+               knob (/ (- w knob-w) 2) (/ (- h knob-h) 2))
+      ))
+(define (update-circles in jn kn knob1 knob2 knob3)
+  (set! i (+ in 1))
+  (set! j (+ jn 1))
+  (set! k (+ kn 1))
+  (send knob1 refresh)
+  (send knob2 refresh)
+  (send knob3 refresh))
 (define (get-value num)
   (cond [(= num 0) i]
         [(= num 1) j]
@@ -16,41 +33,8 @@
     (define current 0)
     (define/override (on-paint)
       (define dc (get-dc))
-      (define knob (make-object bitmap% (string-append
-                                       "circle-"
-                                       (~a (get-value i)) ".png")))
-      (define knob-w (image-width knob))
-      (define knob-h (image-height knob))
-      (define w (get-width))
-      (display w)
-      (newline)
-      (define h (get-height))
-      (display h)
-      (newline)
-        (send dc draw-bitmap
-               knob (/ (- w knob-w) 2) (/ (- h knob-h) 2))
+      ((paint-proc-form i (get-width) (get-height)) dc)
       )
-      ))
-(define frame (new frame%
-                   [label "Example"]
-                   [width 750]
-                   [height 400]))
-(define panel (new horizontal-panel%
-                   [parent frame]))
-(new knob%
-     [parent panel]
-     [i 0]
-     [style (list 'border)]
-     )
-(new knob%
-     [parent panel]
-     [i 1]
-     [style (list 'border)]
-     )
-(new knob%
-     [parent panel]
-     [i 2]
-     [style (list 'border)]
-     )
-
-(send frame show #t)
+    (define/public (redraw)
+      (define dc (get-dc))
+      ((paint-proc-form i (get-width) (get-height)) dc))))

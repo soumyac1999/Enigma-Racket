@@ -2,6 +2,7 @@
 
 (require racket/gui)
 (require "matrix-mult.rkt")
+(require "keyboardEvent.rkt")
 
 (define rotors (list 0 0 0))
 
@@ -61,8 +62,9 @@
       (define dc (get-dc))
       (define w (get-width))
       (define h (get-height))
-
-      ;(send dc 
+      (displayln rotors)
+      (match rotors
+             [(list i j k) (update-circles i j k knob0 knob1 knob2)])
       (for ([i (in-range 10)])
         (send dc draw-bitmap
               (vector-ref r1 i)
@@ -90,13 +92,15 @@
          (let* ([character (char-upcase (car listed))]
                 [enc (convert-char! character)]
                 [pos (hash-ref my-map (car enc))])
-           (set! rotors (cadr enc))
+           (set! rotors (cdr enc))
            (set! mesg (string-append mesg (~a (car enc))))
            (let* ([l (string-length mesg)]
                   [label (if (> l max-len)
-                          (string-append "..." (substring mesg (- l max-len) l))
-                          mesg)])
-             (send msg set-label label))              
+                             (string-append "..." (substring mesg (- l max-len) l))
+                             mesg)])
+             (send msg set-label label))
+           (match rotors
+             [(list i j k) (update-circles i j k knob0 knob1 knob2)])
            (send (2d-vec-ref imgs (car pos) (cdr pos))
                  load-file
                  "black.jpeg")
@@ -119,15 +123,31 @@
 (define frame (new frame%
                    [label "Enigma"]
                    [width 750]
-                   [height 260]
+                   [height 500]
                    [x 0]
                    [y 0]
                    ;[style (list 'no-caption 'no-resize-border)]
                    [border 1]))
-(new enigma-canvas%
-     [parent frame])
-(new enigma-canvas%
-     [parent frame])
+(define panel (new horizontal-panel%
+                   [parent frame]))
+(define knob0 (new knob%
+                   [parent panel]
+                   [i 0]
+                   [style (list 'border)]
+                   ))
+(define knob1 (new knob%
+                   [parent panel]
+                   [i 1]
+                   [style (list 'border)]
+                   ))
 
-(set! rotors (set-enigma-mode! 'encrypt))
+(define knob2 (new knob%
+                   [parent panel]
+                   [i 2]
+                   [style (list 'border)]
+                   ))
+(new enigma-canvas%
+     [parent frame])
+(set! rotors ((set-enigma-mode! 'encrypt)))
 (send frame show #t)
+
