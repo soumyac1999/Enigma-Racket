@@ -30,6 +30,7 @@
 (define (random-matrix)
   (let* ([rand-chars (genperm chars '())]
          [rand-lst (map (lambda (x) (hash-ref key-to-vector x)) rand-chars)])
+    (displayln rand-chars)
     (build-matrix NUMCHAR NUMCHAR (lambda(i j) (matrix-ref (list-ref rand-lst j) i 0)))))
 
 (random-seed 0)
