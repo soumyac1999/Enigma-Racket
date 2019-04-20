@@ -18,15 +18,42 @@
                      [label ""]
                      [auto-resize #t]
                      [font (make-object font% 20 'script)]))
+    (define letters (list #\Q #\W #\E #\R #\T #\Y #\U #\I #\O #\P #\A #\S #\D #\F #\G #\H #\J #\K #\L #\Z #\X #\C #\V #\B #\N #\M))
+    (define img-map (make-hash (list (cons #\Q "letters/Q.jpg")
+                                    (cons #\W "letters/W.jpg")
+                                    (cons #\E "letters/E.jpg")
+                                    (cons #\R "letters/R.jpg")
+                                    (cons #\T "letters/T.jpg")
+                                    (cons #\Y "letters/Y.jpg")
+                                    (cons #\U "letters/U.jpg")
+                                    (cons #\I "letters/I.jpg")
+                                    (cons #\O "letters/O.jpg")
+                                    (cons #\P "letters/P.jpg")
+                                    (cons #\A "letters/A.jpg")
+                                    (cons #\S "letters/S.jpg")
+                                    (cons #\D "letters/D.jpg")
+                                    (cons #\F "letters/F.jpg")
+                                    (cons #\G "letters/G.jpg")
+                                    (cons #\H "letters/H.jpg")
+                                    (cons #\J "letters/J.jpg")
+                                    (cons #\K "letters/K.jpg")
+                                    (cons #\L "letters/L.jpg")
+                                    (cons #\Z "letters/Z.jpg")
+                                    (cons #\X "letters/X.jpg")
+                                    (cons #\C "letters/C.jpg")
+                                    (cons #\V "letters/V.jpg")
+                                    (cons #\B "letters/B.jpg")
+                                    (cons #\N "letters/N.jpg")
+                                    (cons #\M "letters/M.jpg"))))
     (define r1 (build-vector
                 10
-                (λ (x) (make-object bitmap% "white.jpeg"))))
+                (λ (x) (make-object bitmap% (hash-ref img-map (list-ref letters x))))))
     (define r2 (build-vector
                 9
-                (λ (x) (make-object bitmap% "white.jpeg"))))
+                (λ (x) (make-object bitmap% (hash-ref img-map (list-ref letters (+ x 10)))))))
     (define r3 (build-vector
                 7
-                (λ (x) (make-object bitmap% "white.jpeg"))))
+                (λ (x) (make-object bitmap% (hash-ref img-map (list-ref letters (+ x 19)))))))
 
     (define imgs (vector r1 r2 r3))
     (define (2d-vec-ref vec i j) (vector-ref (vector-ref vec i) j))
@@ -62,7 +89,6 @@
       (define dc (get-dc))
       (define w (get-width))
       (define h (get-height))
-      (displayln rotors)
       (match rotors
              [(list i j k) (update-circles i j k knob0 knob1 knob2)])
       (for ([i (in-range 10)])
@@ -91,7 +117,8 @@
               (char-alphabetic? (car listed)))         
          (let* ([character (char-upcase (car listed))]
                 [enc (convert-char! character)]
-                [pos (hash-ref my-map (car enc))])
+                [pos (hash-ref my-map (car enc))]
+                [newimg (hash-ref img-map (car enc))])
            (set! rotors (cdr enc))
            (set! mesg (string-append mesg (~a (car enc))))
            (let* ([l (string-length mesg)]
@@ -118,7 +145,7 @@
                    (+ 75 (* i (/ w 10))) 150))
            (send (2d-vec-ref imgs (car pos) (cdr pos))
                  load-file
-                 "white.jpeg"))]))))
+                 newimg))]))))
 
 (define frame (new frame%
                    [label "Enigma"]
