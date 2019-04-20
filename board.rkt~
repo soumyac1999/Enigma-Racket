@@ -1,22 +1,13 @@
 #lang racket
 
 (require racket/gui)
-(require "matrix-mult.rkt")
-
-(define rotors (list 0 0 0))
 
 (define enigma-canvas%
   (class canvas%
     (super-new)
     (inherit get-dc get-width get-height)
     (define current 0)
-    (define mesg "")
-    (define max-len 35)
 
-    (define msg (new message% [parent frame]
-                     [label ""]
-                     [auto-resize #t]
-                     [font (make-object font% 20 'script)]))
     (define r1 (build-vector
                 10
                 (λ (x) (make-object bitmap% "white.jpeg"))))
@@ -62,7 +53,6 @@
       (define w (get-width))
       (define h (get-height))
 
-      ;(send dc 
       (for ([i (in-range 10)])
         (send dc draw-bitmap
               (vector-ref r1 i)
@@ -86,17 +76,10 @@
         [(equal? key-value 'release)
          'done]
         [(and (= 1 (length listed))
-              (char-alphabetic? (car listed)))         
+              (char-alphabetic? (car listed)))
+         
          (let* ([character (char-upcase (car listed))]
-                [enc (convert-char! character)]
-                [pos (hash-ref my-map (car enc))])
-           (set! rotors (cadr enc))
-           (set! mesg (string-append mesg (~a (car enc))))
-           (let* ([l (string-length mesg)]
-                  [label (if (> l max-len)
-                          (string-append "..." (substring mesg (- l max-len) l))
-                          mesg)])
-             (send msg set-label label))              
+                [pos (hash-ref my-map character)])
            (send (2d-vec-ref imgs (car pos) (cdr pos))
                  load-file
                  "black.jpeg")
@@ -119,15 +102,8 @@
 (define frame (new frame%
                    [label "Enigma"]
                    [width 750]
-                   [height 260]
-                   [x 0]
-                   [y 0]
-                   ;[style (list 'no-caption 'no-resize-border)]
-                   [border 1]))
-(new enigma-canvas%
-     [parent frame])
+                   [height 225]))
 (new enigma-canvas%
      [parent frame])
 
-(set! rotors (set-enigma-mode! 'encrypt))
 (send frame show #t)
