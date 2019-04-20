@@ -191,16 +191,19 @@
 (define (encrypt)
   (send frame enable #t)
   (set! rotors ((set-enigma-mode! 'encrypt)))
+  (displayln rotors)
   ; Diable the rotor set inputs
   (match rotors
     [(list i j k) (update-circles i j k knob0 knob1 knob2)]))
-; Once complete (send board get-mesg) (send board clear-mesg)
 
 (define (decrypt)
-;Get values for rotors
-;Disable inputs
+  ;Get values for rotors
+  ;Disable inputs
+  (define t1 (read))
+  (define t2 (read))
+  (define t3 (read))
   (send frame enable #t)
-  (set! rotors ((set-enigma-mode! 'decrypt) 14 2 0))
+  (set! rotors ((set-enigma-mode! 'decrypt) t1 t2 t3))
   (match rotors
     [(list i j k) (update-circles i j k knob0 knob1 knob2)]))
 
