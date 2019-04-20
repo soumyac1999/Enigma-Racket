@@ -18,7 +18,7 @@
       (define dc (get-dc))
       (define knob (make-object bitmap% (string-append
                                        "circle-"
-                                       (~a (get-value i)) ".png-t")))
+                                       (~a (get-value i)) ".png")))
       (define knob-w (image-width knob))
       (define knob-h (image-height knob))
       (define w (get-width))
@@ -34,7 +34,7 @@
 (define frame (new frame%
                    [label "Example"]
                    [width 750]
-                   [height 225]))
+                   [height 400]))
 (define panel (new horizontal-panel%
                    [parent frame]))
 (new knob%
