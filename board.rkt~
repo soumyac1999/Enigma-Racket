@@ -7,8 +7,7 @@
 (require "keyboardEvent.rkt")
 
 (define rotors (list 0 0 0))
-(define disallow
-  (list #\linefeed #\newline #\page #\tab #\vtab #\return))
+
 (define (zip l1 l2)
   (map cons l1 l2))
 
@@ -110,18 +109,7 @@
                    (+ 75 (* i (/ w 10))) 150))
            (send (2d-vec-ref imgs (car pos) (cdr pos))
                  load-file
-                 newimg))]
-        
-        [(and (= 1 (length listed)) (not (member (car listed) disallow)))
-         (let* ([character (car listed)])
-           (set! mesg (string-append mesg (~a character)))
-           (let* ([l (string-length mesg)]
-                  [label (if (> l max-len)
-                             (string-append "..." (substring mesg (- l max-len) l))
-                             mesg)])
-             (send msg set-label label))
-           (match rotors
-             [(list i j k) (update-circles i j k knob0 knob1 knob2)]))]))))
+                 newimg))]))))
 
 (define frame (new frame%
                    [label "Enigma"]
