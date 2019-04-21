@@ -1,3 +1,5 @@
+
+
 #lang racket
 
 (require racket/gui)
@@ -5,6 +7,9 @@
 (require "keyboardEvent.rkt")
 
 (define rotors (list 0 0 0))
+
+(define (zip l1 l2)
+  (map cons l1 l2))
 
 (define enigma-canvas%
   (class canvas%
@@ -19,71 +24,21 @@
                      [auto-resize #t]
                      [font (make-object font% 20 'script)]))
     (define letters (list #\Q #\W #\E #\R #\T #\Y #\U #\I #\O #\P #\A #\S #\D #\F #\G #\H #\J #\K #\L #\Z #\X #\C #\V #\B #\N #\M))
-    (define img-map (make-hash (list (cons #\Q "letters/Q.jpg")
-                                     (cons #\W "letters/W.jpg")
-                                     (cons #\E "letters/E.jpg")
-                                     (cons #\R "letters/R.jpg")
-                                     (cons #\T "letters/T.jpg")
-                                     (cons #\Y "letters/Y.jpg")
-                                     (cons #\U "letters/U.jpg")
-                                     (cons #\I "letters/I.jpg")
-                                     (cons #\O "letters/O.jpg")
-                                     (cons #\P "letters/P.jpg")
-                                     (cons #\A "letters/A.jpg")
-                                     (cons #\S "letters/S.jpg")
-                                     (cons #\D "letters/D.jpg")
-                                     (cons #\F "letters/F.jpg")
-                                     (cons #\G "letters/G.jpg")
-                                     (cons #\H "letters/H.jpg")
-                                     (cons #\J "letters/J.jpg")
-                                     (cons #\K "letters/K.jpg")
-                                     (cons #\L "letters/L.jpg")
-                                     (cons #\Z "letters/Z.jpg")
-                                     (cons #\X "letters/X.jpg")
-                                     (cons #\C "letters/C.jpg")
-                                     (cons #\V "letters/V.jpg")
-                                     (cons #\B "letters/B.jpg")
-                                     (cons #\N "letters/N.jpg")
-                                     (cons #\M "letters/M.jpg"))))
     (define r1 (build-vector
                 10
-                (λ (x) (make-object bitmap% (hash-ref img-map (list-ref letters x))))))
+                (λ (x) (make-object bitmap% (~a "letters/" (list-ref letters x) ".jpg")))))
     (define r2 (build-vector
                 9
-                (λ (x) (make-object bitmap% (hash-ref img-map (list-ref letters (+ x 10)))))))
+                (λ (x) (make-object bitmap% (~a "letters/" (list-ref letters (+ x 10)) ".jpg")))))
     (define r3 (build-vector
                 7
-                (λ (x) (make-object bitmap% (hash-ref img-map (list-ref letters (+ x 19)))))))
+                (λ (x) (make-object bitmap% (~a "letters/" (list-ref letters (+ x 19)) ".jpg")))))
 
     (define imgs (vector r1 r2 r3))
     (define (2d-vec-ref vec i j) (vector-ref (vector-ref vec i) j))
-
-    (define my-map (make-hash (list (cons #\Q (cons 0 0))
-                                    (cons #\W (cons 0 1))
-                                    (cons #\E (cons 0 2))
-                                    (cons #\R (cons 0 3))
-                                    (cons #\T (cons 0 4))
-                                    (cons #\Y (cons 0 5))
-                                    (cons #\U (cons 0 6))
-                                    (cons #\I (cons 0 7))
-                                    (cons #\O (cons 0 8))
-                                    (cons #\P (cons 0 9))
-                                    (cons #\A (cons 1 0))
-                                    (cons #\S (cons 1 1))
-                                    (cons #\D (cons 1 2))
-                                    (cons #\F (cons 1 3))
-                                    (cons #\G (cons 1 4))
-                                    (cons #\H (cons 1 5))
-                                    (cons #\J (cons 1 6))
-                                    (cons #\K (cons 1 7))
-                                    (cons #\L (cons 1 8))
-                                    (cons #\Z (cons 2 0))
-                                    (cons #\X (cons 2 1))
-                                    (cons #\C (cons 2 2))
-                                    (cons #\V (cons 2 3))
-                                    (cons #\B (cons 2 4))
-                                    (cons #\N (cons 2 5))
-                                    (cons #\M (cons 2 6)))))
+    (define my-map (make-hash (zip letters (build-list 26 (lambda (i) (cond [(< i 19)
+                                                                             (cons (quotient i 10) (modulo i 10))]
+                                                                            [else (cons 2 (modulo (+ i 1) 10))]))))))
 
     (define/public (get-mesg)
       (displayln mesg))
@@ -127,7 +82,7 @@
          (let* ([character (char-upcase (car listed))]
                 [enc (convert-char! character)]
                 [pos (hash-ref my-map (car enc))]
-                [newimg (hash-ref img-map (car enc))])
+                [newimg (~a "letters/" (car enc) ".jpg")])
            (set! rotors (cdr enc))
            (set! mesg (string-append mesg (~a (car enc))))
            (let* ([l (string-length mesg)]
