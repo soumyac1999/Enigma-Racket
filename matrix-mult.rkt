@@ -2,6 +2,7 @@
 (require math/matrix)
 (provide set-enigma-mode!)
 (provide convert-char!)
+(provide set-seed!)
 (define NUMCHAR 26)
 (define CHAR-OFFSET 65)
 (define left-rotor 0)
@@ -33,16 +34,32 @@
     (build-matrix NUMCHAR NUMCHAR (lambda(i j) (matrix-ref (list-ref rand-lst j) i 0)))))
 
 (random-seed 0)
-(define default-L (random-matrix))
-(define default-M (random-matrix))
-(define default-R (random-matrix))
-
+(define default-L 0)
+(define default-M 0)
+(define default-R 0)
 (define L default-L)
 (define M default-M)
 (define R default-R)
-(define Li (matrix-inverse L))
-(define Mi (matrix-inverse M))
-(define Ri (matrix-inverse R))
+(define Li 0)
+(define Mi 0)
+(define Ri 0)
+
+(define (init-matrices)
+  (begin 
+    (set! default-L (random-matrix))
+    (set! default-M (random-matrix))
+    (set! default-R (random-matrix))
+    (set! L default-L)
+    (set! M default-M)
+    (set! R default-R)
+    (set! Li (matrix-inverse L))
+    (set! Mi (matrix-inverse M))
+    (set! Ri (matrix-inverse R))))
+
+(define (set-seed! s)
+  (begin
+    (random-seed s)
+    (init-matrices)))
 
 (define (set-enigma-mode! mode)
   (cond [(equal? mode 'encrypt)

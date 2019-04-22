@@ -199,6 +199,8 @@
                    [i 2]
                    [style (list 'border)]
                    ))
+(define seed (read))
+(set-seed! seed)
 
 (define board (new enigma-canvas%
                    [parent frame]))
