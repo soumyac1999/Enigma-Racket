@@ -4,6 +4,12 @@
 (require "matrix-mult.rkt")
 (require "keyboardEvent.rkt")
 (require "control.rkt")
+(require "turing.rkt")
+(require "list-comprehension.rkt")
+
+
+(define (update-circles-board t1 t2 t3)
+  (update-circles t1 t2 t3 knob0 knob1 knob2))
 
 (define state 'none)
 (define rotors (list 0 0 0))
@@ -280,6 +286,18 @@
 
 (define board (new enigma-canvas%
                    [parent frame]))
+
+
+(define (the-truth known-prefix encrypted-message)
+  (send popup show #t)
+  (set-seed! seed)
+  (let ([L (build-list 26 (lambda(x) x))]
+        [M (build-list 26 (lambda(x) x))]
+        [R (build-list 26 (lambda(x) x))])
+     (filter (lambda (l) (car l)) (lc (begin
+                                        (update-circles-board l m r)
+                                        (displayln (list l m r))
+                                        (cons (prefix-matcher (string->list known-prefix) (decrypt-text encrypted-message l m r)) (list l m r))) : l <- L m <- M r <- R))))
 
 (define seed #f)
 (send frame show #t)

@@ -82,25 +82,25 @@
 (define x (list-of-three  7 @  <- 5))
 
 
-(define-syntax for
-  (syntax-rules (:)
-    [(for init : condition : step : statements)
-       (begin
-         init
-         (define (iter)
-           (cond [condition (begin statements
-                                   step
-                                   (iter))]))
-         (iter))]))
-
-(define i 0)
-(define sum 0)
-(for (begin
-       (set! i 0)
-       (set! sum 0)) :
-  (< i 10) :
-  (set! i (+ i 1)) :
-  (set! sum (+ sum i)))
+;(define-syntax for
+;  (syntax-rules (:)
+;    [(for init : condition : step : statements)
+;       (begin
+;         init
+;         (define (iter)
+;           (cond [condition (begin statements
+;                                   step
+;                                   (iter))]))
+;         (iter))]))
+;
+;(define i 0)
+;(define sum 0)
+;(for (begin
+;       (set! i 0)
+;       (set! sum 0)) :
+;  (< i 10) :
+;  (set! i (+ i 1)) :
+;  (set! sum (+ sum i)))
 
 ;(begin
 ;  (begin
