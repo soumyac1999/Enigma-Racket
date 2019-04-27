@@ -33,7 +33,7 @@
          [rand-lst (map (lambda (x) (hash-ref key-to-vector x)) rand-chars)])
     (build-matrix NUMCHAR NUMCHAR (lambda(i j) (matrix-ref (list-ref rand-lst j) i 0)))))
 
-(random-seed 0)
+
 (define default-L 0)
 (define default-M 0)
 (define default-R 0)

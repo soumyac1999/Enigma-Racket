@@ -199,19 +199,20 @@
                    [i 2]
                    [style (list 'border)]
                    ))
-(define seed (read))
-(set-seed! seed)
 
 (define board (new enigma-canvas%
                    [parent frame]))
-
+(define seed #f)
 (send frame show #t)
 (send frame enable #f)
 
 (define (encrypt)
   (set! state 'encrypt)
   (send frame enable #t)
+  (set! seed (random 2147483647))
+  (set-seed! seed)
   (set! rotors ((set-enigma-mode! 'encrypt)))
+  (displayln seed)
   (displayln (map i->c rotors))
   ; Disable the rotor set inputs
   (match rotors
@@ -221,6 +222,8 @@
   ;Get values for rotors
   ;Disable inputs
   (set! state 'waiting-for-key)
+  (set! seed #f)
+  (send popup show #t)
   (set! t1 0)
   (set! t2 0)
   (set! t3 0)
@@ -235,6 +238,7 @@
   (set! state 'decrypt)
   (send board clear-mesg)
   (set! key-so-far 0)
+  (set-seed! seed)
   (set! rotors ((set-enigma-mode! 'decrypt) t1 t2 t3))
   (match rotors
     [(list i j k) (update-circles i j k knob0 knob1 knob2)]))
@@ -248,6 +252,7 @@
   (set! t2 0)
   (set! t3 0)
   (set! key-so-far 0)
+  (set! seed #f)
   (update-circles 0 0 0 knob0 knob1 knob2)
   (send frame enable #f))
   
@@ -263,3 +268,27 @@
 ;                [min-value 0]
 ;                [max-value 25]
 ;                [parent panel]))
+(define (handle-seed-input t e)
+  (cond [(equal? (send e get-event-type) 'text-field-enter)
+         (define text (send (send t get-editor) get-text))
+         (define num (string->number text))
+         (if num
+             (begin 
+               (set! seed num)
+               (send popup show #f))
+             (begin
+               (send err-msg set-label "Number!")
+               (send (send t get-editor) erase)))]))
+
+(define popup (new dialog%
+                   [parent #f]
+                    [label "Seed"]
+                    [width 200]
+                    [height 200]
+                    [style (list 'close-button)]))
+
+(define tf (new text-field% [parent popup]
+     [label "Enter seed"]
+     [callback handle-seed-input]))
+(define err-msg (new message% [parent popup]
+                     [label (list->string (build-list 22 (lambda (x) #\space)))]))
