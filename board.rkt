@@ -1,10 +1,9 @@
-
-
 #lang racket
 
 (require racket/gui)
 (require "matrix-mult.rkt")
 (require "keyboardEvent.rkt")
+(require "control.rkt")
 
 (define state 'none)
 (define rotors (list 0 0 0))
@@ -174,53 +173,18 @@
                (match rotors
                  [(list i j k) (update-circles i j k knob0 knob1 knob2)]))])))))
 
-(define frame (new frame%
-                   [label "Enigma"]
-                   [width 750]
-                   [height 490]
-                   [x 0]
-                   [y 0]
-                   ;[style (list 'no-caption 'no-resize-border)]
-                   [border 1]))
-(define panel (new horizontal-panel%
-                   [parent frame]))
-(define knob0 (new knob%
-                   [parent panel]
-                   [i 0]
-                   [style (list 'border)]
-                   ))
-(define knob1 (new knob%
-                   [parent panel]
-                   [i 1]
-                   [style (list 'border)]
-                   ))
-(define knob2 (new knob%
-                   [parent panel]
-                   [i 2]
-                   [style (list 'border)]
-                   ))
-
-(define board (new enigma-canvas%
-                   [parent frame]))
-(define seed #f)
-(send frame show #t)
-(send frame enable #f)
-
 (define (encrypt)
   (set! state 'encrypt)
-  (send frame enable #t)
+  (send board enable #t)
   (set! seed (random 2147483647))
   (set-seed! seed)
   (set! rotors ((set-enigma-mode! 'encrypt)))
   (displayln seed)
   (displayln (map i->c rotors))
-  ; Disable the rotor set inputs
   (match rotors
     [(list i j k) (update-circles i j k knob0 knob1 knob2)]))
 
 (define (decrypt-wait)
-  ;Get values for rotors
-  ;Disable inputs
   (set! state 'waiting-for-key)
   (set! seed #f)
   (send popup show #t)
@@ -228,11 +192,7 @@
   (set! t2 0)
   (set! t3 0)
   (set! key-so-far 0)
-  (send frame enable #t)
-  ;  (define t1 (read))
-  ;  (define t2 (read))
-  ;  (define t3 (read))
-  )
+  (send board enable #t))
 
 (define (decrypt)
   (set! state 'decrypt)
@@ -254,20 +214,8 @@
   (set! key-so-far 0)
   (set! seed #f)
   (update-circles 0 0 0 knob0 knob1 knob2)
-  (send frame enable #f))
+  (send board enable #f))
   
-;(define ls (new slider% [label "left"]
-;                [min-value 0]
-;                [max-value 25]
-;                [parent panel]))
-;(define cs (new slider% [label "center"]
-;                [min-value 0]
-;                [max-value 25]
-;                [parent panel]))
-;(define rs (new slider% [label "right"]
-;                [min-value 0]
-;                [max-value 25]
-;                [parent panel]))
 (define (handle-seed-input t e)
   (cond [(equal? (send e get-event-type) 'text-field-enter)
          (define text (send (send t get-editor) get-text))
@@ -292,3 +240,44 @@
      [callback handle-seed-input]))
 (define err-msg (new message% [parent popup]
                      [label (list->string (build-list 22 (lambda (x) #\space)))]))
+
+
+
+(define frame (new frame%
+                   [label "Enigma"]
+                   [width 750]
+                   [height 490]
+                   [x 0]
+                   [y 0]
+                   ;[style (list 'no-caption 'no-resize-border)]
+                   [border 1]))
+(define panel1 (new horizontal-panel%
+                    [parent frame]))
+(define panel (new horizontal-panel%
+                   [parent panel1]
+                   [min-width 600]))
+
+(define knob0 (new knob%
+                   [parent panel]
+                   [i 0]
+                   [style (list 'border)]))
+(define knob1 (new knob%
+                   [parent panel]
+                   [i 1]
+                   [style (list 'border)]))
+(define knob2 (new knob%
+                   [parent panel]
+                   [i 2]
+                   [style (list 'border)]))
+
+(define control (new button-canvas%
+                     [parent panel1]
+                     [encrypt encrypt]
+                     [decrypt decrypt-wait]))
+
+(define board (new enigma-canvas%
+                   [parent frame]))
+
+(define seed #f)
+(send frame show #t)
+(send board enable #f)
