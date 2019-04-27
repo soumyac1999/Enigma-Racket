@@ -176,6 +176,7 @@
 (define (encrypt)
   (set! state 'encrypt)
   (send board enable #t)
+  (send control enable #f)
   (set! seed (random 2147483647))
   (set-seed! seed)
   (set! rotors ((set-enigma-mode! 'encrypt)))
@@ -185,6 +186,7 @@
     [(list i j k) (update-circles i j k knob0 knob1 knob2)]))
 
 (define (decrypt-wait)
+  (send control enable #f)
   (set! state 'waiting-for-key)
   (set! seed #f)
   (send popup show #t)
@@ -213,6 +215,7 @@
   (set! t3 0)
   (set! key-so-far 0)
   (set! seed #f)
+  (send control enable #t)
   (update-circles 0 0 0 knob0 knob1 knob2)
   (send board enable #f))
   
@@ -230,14 +233,14 @@
 
 (define popup (new dialog%
                    [parent #f]
-                    [label "Seed"]
-                    [width 200]
-                    [height 200]
-                    [style (list 'close-button)]))
+                   [label "Seed"]
+                   [width 200]
+                   [height 200]
+                   [style (list 'close-button)]))
 
 (define tf (new text-field% [parent popup]
-     [label "Enter seed"]
-     [callback handle-seed-input]))
+                [label "Enter seed"]
+                [callback handle-seed-input]))
 (define err-msg (new message% [parent popup]
                      [label (list->string (build-list 22 (lambda (x) #\space)))]))
 
