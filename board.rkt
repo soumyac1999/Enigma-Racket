@@ -236,8 +236,12 @@
              (begin
                (send err-msg set-label "Number!")
                (send (send t get-editor) erase)))]))
-
-(define popup (new dialog%
+(define dialog-custom%
+  (class dialog%
+    (super-new)
+    (define/augment (on-close)
+      (send popup show #t))))
+(define popup (new dialog-custom%
                    [parent #f]
                    [label "Seed"]
                    [width 200]
