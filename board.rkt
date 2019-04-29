@@ -461,8 +461,13 @@
 (define board (new enigma-canvas%
                    [parent frame]))
 
+(define (decrypt-attempt known-prefix e-m l m r)
+  (let ([ans (prefix-matcher (string->list known-prefix) (string->list e-m))])
+    (begin
+      (cond [ans (display-message e-m l m r)])
+      (list ans l m r))))
 
-(define (the-truth known-prefix encrypted-message)
+(define (decrypt-message encrypted-message known-prefix)
   (send popup show #t)
   (set-seed! seed)
   (let ([L (build-list 26 (lambda(x) x))]
@@ -470,22 +475,18 @@
         [R (build-list 26 (lambda(x) x))])
     (filter (lambda (l) (car l))
             (lc (begin
-                  (set! t1 l)
-                  (set! t2 m)
-                  (set! t3 r)
                   ((set-enigma-mode! 'decrypt) l m r)
-                  (cond [(= r 25) (displayln (list l m r))])
-                  (cons (prefix-matcher (string->list known-prefix) (string->list encrypted-message)) (list l m r))) : l <- L m <- M r <- R))))
+                  (decrypt-attempt known-prefix encrypted-message l m r)) : l <- L m <- M r <- R))))
 
 (define (display-message e-m l m r)
   (begin
     ((set-enigma-mode! 'decrypt) l m r)
     (displayln (list->string (map convert-any-char (string->list e-m))))))
 
-(define (decrypt-message encrypted-message known-prefix)
-  (define rotors (map cdr (the-truth known-prefix encrypted-message)))
-  (cond [(null? rotors) (displayln "Failed")]
-        [else (for-each (lambda(l) (apply (lambda(a b c) (display-message encrypted-message a b c)) l)) rotors)]))
+;(define (decrypt-message encrypted-message known-prefix)
+;  (define rotors (map cdr (the-truth known-prefix encrypted-message)))
+;  (cond [(null? rotors) (displayln "failed")]
+;        [else (for-each (lambda(l) (apply (lambda(a b c) (let ([ans ]) l)) rotors)]))
 
 
 (define seed #f)
