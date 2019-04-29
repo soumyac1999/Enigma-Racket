@@ -224,6 +224,13 @@
   (send control enable #t)
   (update-circles 0 0 0 knob0 knob1 knob2)
   (send board enable #f))
+
+(define (crack)
+  ;Get message
+  ;Get prefix
+  (define msg (read))
+  (define prefix (read))
+  (decrypt-message msg prefix))
   
 (define (handle-seed-input t e)
   (cond [(equal? (send e get-event-type) 'text-field-enter)
@@ -286,7 +293,8 @@
 (define control (new button-canvas%
                      [parent panel1]
                      [encrypt encrypt]
-                     [decrypt decrypt-wait]))
+                     [decrypt decrypt-wait]
+                     [crack crack]))
 
 (define board (new enigma-canvas%
                    [parent frame]))
@@ -298,14 +306,15 @@
   (let ([L (build-list 26 (lambda(x) x))]
         [M (build-list 26 (lambda(x) x))]
         [R (build-list 26 (lambda(x) x))])
-     (filter (lambda (l) (car l)) (lc (begin
-                                              (set! t1 l)
-                                              (set! t2 m)
-                                              (set! t3 r)
-                                              (update-circles-board l m r)
-                                              ((set-enigma-mode! 'decrypt) l m r)
-                                              (cond [(= r 25) (displayln (list l m r))])
-                                              (cons (prefix-matcher (string->list known-prefix) (string->list encrypted-message)) (list l m r))) : l <- L m <- M r <- R))))
+    (filter (lambda (l) (car l))
+            (lc (begin
+                  (set! t1 l)
+                  (set! t2 m)
+                  (set! t3 r)
+                  (update-circles-board l m r)
+                  ((set-enigma-mode! 'decrypt) l m r)
+                  (cond [(= r 25) (displayln (list l m r))])
+                  (cons (prefix-matcher (string->list known-prefix) (string->list encrypted-message)) (list l m r))) : l <- L m <- M r <- R))))
 
 (define (display-message e-m l m r)
   (begin
