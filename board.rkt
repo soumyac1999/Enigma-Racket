@@ -14,13 +14,14 @@
 (define state 'none)
 (define rotors (list 0 0 0))
 (define disallow
-  (list #\page #\tab #\vtab ))
+  (list #\page #\tab #\vtab #\backspace))
 (define done-keys
   (list  #\linefeed #\newline #\return))
 (define t1 0)
 (define t2 0)
 (define t3 0)
 (define key-so-far 0)
+(define msg #f)
 (define (zip l1 l2)
   (map cons l1 l2))
 (define (c->i char)
@@ -58,7 +59,7 @@
                                                                             [else (cons 2 (modulo (+ i 1) 10))]))))))
 
     (define/public (get-mesg)
-      (displayln mesg))
+      mesg)
     (define/public (clear-mesg)
       (set! mesg "")
       (on-paint)
@@ -91,11 +92,13 @@
       (define h (get-height))
       (define key-value (send key-event get-key-code))
       (define listed (string->list (~a key-value)))
-      (if (equal? state 'waiting-for-key)
+      (cond [(equal? state 'waiting-for-key)
           (cond
             [(equal? key-value 'release)
              'done]
-            [(let* ([character (char-upcase (car listed))]
+            [(and (= 1 (length listed))
+                  (char-alphabetic? (car listed)))
+             (let* ([character (char-upcase (car listed))]
                     [pos (hash-ref my-map character)]
                     [newimg (~a "letters/" character ".jpg")])
                (cond [(= key-so-far 0) (set! t1 (c->i character))]
@@ -129,8 +132,134 @@
                (if (= key-so-far 3)
                    (decrypt)
                    'ignore))]
-            )
-          (cond
+            )]
+          [(equal? state 'msg-crack)
+           (cond
+            [(equal? key-value 'release)
+             'done]
+            [(and (= 1 (length listed))
+                  (char-alphabetic? (car listed)))         
+             (let* ([character (char-upcase (car listed))]
+                    [enc (cons character rotors)]
+                    [pos (hash-ref my-map (car enc))]
+                    [newimg (~a "letters/" (car enc) ".jpg")])
+               (set! rotors (cdr enc))
+               (set! mesg (string-append mesg (~a (car enc))))
+               (let* ([l (string-length mesg)]
+                      [label (if (> l max-len)
+                                 (string-append "..." (substring mesg (- l max-len) l))
+                                 mesg)])
+                 (send msg set-label label))
+               (match rotors
+                 [(list i j k) (update-circles i j k knob0 knob1 knob2)])
+               (send (2d-vec-ref imgs (car pos) (cdr pos))
+                     load-file
+                     "letters/act.jpeg")
+               (for ([i (in-range 10)])
+                 (send dc draw-bitmap
+                       (vector-ref r1 i)
+                       (* i (/ w 10)) 0))
+               (for ([i (in-range 9)])
+                 (send dc draw-bitmap
+                       (vector-ref r2 i)
+                       (+ 30 (* i (/ w 10))) 75))
+               (for ([i (in-range 7)])
+                 (send dc draw-bitmap
+                       (vector-ref r3 i)
+                       (+ 75 (* i (/ w 10))) 150))
+               (send (2d-vec-ref imgs (car pos) (cdr pos))
+                     load-file
+                     newimg))]
+            [(and (= 1 (length listed)) (member (car listed) done-keys))
+             (crack-prefix)]
+            [(and (= 1 (length listed)) (not (member (car listed) disallow)))
+             (let* ([character (char-upcase (car listed))]
+                    [enc (cons character rotors)])
+               (set! rotors (cdr enc))
+               (set! mesg (string-append mesg (~a (car enc))))
+               (let* ([l (string-length mesg)]
+                      [label (if (> l max-len)
+                                 (string-append "..." (substring mesg (- l max-len) l))
+                                 mesg)])
+                 (send msg set-label label))
+               (match rotors
+                 [(list i j k) (update-circles i j k knob0 knob1 knob2)])
+               (for ([i (in-range 10)])
+                 (send dc draw-bitmap
+                       (vector-ref r1 i)
+                       (* i (/ w 10)) 0))
+               (for ([i (in-range 9)])
+                 (send dc draw-bitmap
+                       (vector-ref r2 i)
+                       (+ 30 (* i (/ w 10))) 75))
+               (for ([i (in-range 7)])
+                 (send dc draw-bitmap
+                       (vector-ref r3 i)
+                       (+ 75 (* i (/ w 10))) 150)))])]
+          [(equal? state 'crack-prefix)
+            (cond
+            [(equal? key-value 'release)
+             'done]
+            [(and (= 1 (length listed))
+                  (char-alphabetic? (car listed)))         
+             (let* ([character (char-upcase (car listed))]
+                    [enc (cons character rotors)]
+                    [pos (hash-ref my-map (car enc))]
+                    [newimg (~a "letters/" (car enc) ".jpg")])
+               (set! rotors (cdr enc))
+               (set! mesg (string-append mesg (~a (car enc))))
+               (let* ([l (string-length mesg)]
+                      [label (if (> l max-len)
+                                 (string-append "..." (substring mesg (- l max-len) l))
+                                 mesg)])
+                 (send msg set-label label))
+               (match rotors
+                 [(list i j k) (update-circles i j k knob0 knob1 knob2)])
+               (send (2d-vec-ref imgs (car pos) (cdr pos))
+                     load-file
+                     "letters/act.jpeg")
+               (for ([i (in-range 10)])
+                 (send dc draw-bitmap
+                       (vector-ref r1 i)
+                       (* i (/ w 10)) 0))
+               (for ([i (in-range 9)])
+                 (send dc draw-bitmap
+                       (vector-ref r2 i)
+                       (+ 30 (* i (/ w 10))) 75))
+               (for ([i (in-range 7)])
+                 (send dc draw-bitmap
+                       (vector-ref r3 i)
+                       (+ 75 (* i (/ w 10))) 150))
+               (send (2d-vec-ref imgs (car pos) (cdr pos))
+                     load-file
+                     newimg))]
+            [(and (= 1 (length listed)) (member (car listed) done-keys))
+             (crack-execute)]
+            [(and (= 1 (length listed)) (not (member (car listed) disallow)))
+             (let* ([character (char-upcase (car listed))]
+                    [enc (cons character rotors)])
+               (set! rotors (cdr enc))
+               (set! mesg (string-append mesg (~a (car enc))))
+               (let* ([l (string-length mesg)]
+                      [label (if (> l max-len)
+                                 (string-append "..." (substring mesg (- l max-len) l))
+                                 mesg)])
+                 (send msg set-label label))
+               (match rotors
+                 [(list i j k) (update-circles i j k knob0 knob1 knob2)])
+               (for ([i (in-range 10)])
+                 (send dc draw-bitmap
+                       (vector-ref r1 i)
+                       (* i (/ w 10)) 0))
+               (for ([i (in-range 9)])
+                 (send dc draw-bitmap
+                       (vector-ref r2 i)
+                       (+ 30 (* i (/ w 10))) 75))
+               (for ([i (in-range 7)])
+                 (send dc draw-bitmap
+                       (vector-ref r3 i)
+                       (+ 75 (* i (/ w 10))) 150)))])]
+          [else (cond
             [(equal? key-value 'release)
              'done]
             [(and (= 1 (length listed))
@@ -169,15 +298,29 @@
             [(and (= 1 (length listed)) (member (car listed) done-keys))
              (done)]
             [(and (= 1 (length listed)) (not (member (car listed) disallow)))
-             (let* ([character (car listed)])
-               (set! mesg (string-append mesg (~a character)))
+             (let* ([character (char-upcase (car listed))]
+                    [enc (convert-char! character)])
+               (set! rotors (cdr enc))
+               (set! mesg (string-append mesg (~a (car enc))))
                (let* ([l (string-length mesg)]
                       [label (if (> l max-len)
                                  (string-append "..." (substring mesg (- l max-len) l))
                                  mesg)])
                  (send msg set-label label))
                (match rotors
-                 [(list i j k) (update-circles i j k knob0 knob1 knob2)]))])))))
+                 [(list i j k) (update-circles i j k knob0 knob1 knob2)])
+               (for ([i (in-range 10)])
+                 (send dc draw-bitmap
+                       (vector-ref r1 i)
+                       (* i (/ w 10)) 0))
+               (for ([i (in-range 9)])
+                 (send dc draw-bitmap
+                       (vector-ref r2 i)
+                       (+ 30 (* i (/ w 10))) 75))
+               (for ([i (in-range 7)])
+                 (send dc draw-bitmap
+                       (vector-ref r3 i)
+                       (+ 75 (* i (/ w 10))) 150)))])]))))
 
 (define (encrypt)
   (set! state 'encrypt)
@@ -213,7 +356,7 @@
 
 (define (done)
   (set! state 'none)
-  (send board get-mesg)
+  (displayln (send board get-mesg))
   (send board clear-mesg)
   (set! rotors '(0 0 0))
   (set! t1 0)
@@ -221,28 +364,47 @@
   (set! t3 0)
   (set! key-so-far 0)
   (set! seed #f)
+  (set! msg #f)
   (send control enable #t)
   (update-circles 0 0 0 knob0 knob1 knob2)
   (send board enable #f))
 
 (define (crack)
+  (set! state 'msg-crack)
+  (send control enable #f)
+  (set! seed #f)
+  (set! t1 0)
+  (set! t2 0)
+  (set! t3 0)
+  (send board enable #t)
   ;Get message
   ;Get prefix
-  (define msg (read))
-  (define prefix (read))
-  (decrypt-message msg prefix))
+  )
+(define (crack-prefix)
+  (set! msg (send board get-mesg))
+  (send board clear-mesg)
+  (set! state 'crack-prefix))
+
+(define (crack-execute)
+  (define prefix  (send board get-mesg))
+  (send board clear-mesg)
+  (send board enable #f)
+  (decrypt-message msg prefix)
+  (done))
   
 (define (handle-seed-input t e)
   (cond [(equal? (send e get-event-type) 'text-field-enter)
          (define text (send (send t get-editor) get-text))
+         (send (send t get-editor) erase)
          (define num (string->number text))
          (if num
              (begin 
                (set! seed num)
+               (send err-msg set-label "")
                (send popup show #f))
              (begin
                (send err-msg set-label "Number!")
-               (send (send t get-editor) erase)))]))
+               ))]))
 (define dialog-custom%
   (class dialog%
     (super-new)
@@ -311,7 +473,6 @@
                   (set! t1 l)
                   (set! t2 m)
                   (set! t3 r)
-                  (update-circles-board l m r)
                   ((set-enigma-mode! 'decrypt) l m r)
                   (cond [(= r 25) (displayln (list l m r))])
                   (cons (prefix-matcher (string->list known-prefix) (string->list encrypted-message)) (list l m r))) : l <- L m <- M r <- R))))
