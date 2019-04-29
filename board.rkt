@@ -2,7 +2,7 @@
 
 (require racket/gui)
 (require "matrix-mult.rkt")
-(require "keyboardEvent.rkt")
+(require "knobs.rkt")
 (require "control.rkt")
 (require "turing.rkt")
 (require "list-comprehension.rkt")
