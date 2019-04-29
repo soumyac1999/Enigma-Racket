@@ -299,9 +299,24 @@
         [M (build-list 26 (lambda(x) x))]
         [R (build-list 26 (lambda(x) x))])
      (filter (lambda (l) (car l)) (lc (begin
-                                        (update-circles-board l m r)
-                                        (displayln (list l m r))
-                                        (cons (prefix-matcher (string->list known-prefix) (decrypt-text encrypted-message l m r)) (list l m r))) : l <- L m <- M r <- R))))
+                                              (set! t1 l)
+                                              (set! t2 m)
+                                              (set! t3 r)
+                                              (update-circles-board l m r)
+                                              ((set-enigma-mode! 'decrypt) l m r)
+                                              (cond [(= r 25) (displayln (list l m r))])
+                                              (cons (prefix-matcher (string->list known-prefix) (string->list encrypted-message)) (list l m r))) : l <- L m <- M r <- R))))
+
+(define (display-message e-m l m r)
+  (begin
+    ((set-enigma-mode! 'decrypt) l m r)
+    (displayln (list->string (map convert-any-char (string->list e-m))))))
+
+(define (decrypt-message encrypted-message known-prefix)
+  (define rotors (map cdr (the-truth known-prefix encrypted-message)))
+  (cond [(null? rotors) (displayln "Failed")]
+        [else (for-each (lambda(l) (apply (lambda(a b c) (display-message encrypted-message a b c)) l)) rotors)]))
+
 
 (define seed #f)
 (send frame show #t)

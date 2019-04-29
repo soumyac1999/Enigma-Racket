@@ -107,3 +107,11 @@
                                   (set! middle-rotor (modulo (+ 1 middle-rotor) NUMCHAR))
                                   (cond [(zero? middle-rotor) (set! right-rotor (modulo (+ 1 right-rotor) NUMCHAR))]))])
       (list new-char left-rotor middle-rotor right-rotor))))
+
+(define-syntax m-ind
+  (syntax-rules (< >)
+    [(m-ind M < i > < >) (matrix-row M i)]
+    [(m-ind M < i >) (matrix-row M i)] ;; both return the ith row of M as a 1xN matrix
+    [(m-ind M < > < j >) (matrix-col M j)] ;; returns jth column of M as a Mx1 matrix
+    [(m-ind M < i > < j >) (matrix-ref M i j)] ;; returns the ijth element
+    ))
